@@ -3,7 +3,7 @@ package config
 import "github.com/caarlos0/env/v6"
 
 type Config struct {
-	Port       string `env:"PORT" envDefault:"8080"`
+	Port       string `env:"PORT" envDefault:":8080"`
 	DBHost     string `env:"DB_HOST" envDefault:"localhost"`
 	DBPort     string `env:"DB_PORT" envDefault:"5432"`
 	DBUser     string `env:"DB_USER" envDefault:"postgres"`

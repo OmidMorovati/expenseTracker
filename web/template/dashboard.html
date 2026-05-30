@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Dashboard</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+</head>
+<body>
+<h1>Daily Expenses</h1>
+<input type="date" id="date" hx-get="/api/reports/daily" hx-target="#results" hx-trigger="change">
+<div id="results"></div>
+
+<script>
+    document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('date').dispatchEvent(new Event('change'));
+</script>
+</body>
+</html>
