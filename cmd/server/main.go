@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/omidMorovati/expenseTracker/internal/config"
 	"github.com/omidMorovati/expenseTracker/internal/handler"
+	"github.com/omidMorovati/expenseTracker/internal/middleware"
 	"github.com/omidMorovati/expenseTracker/internal/repository"
 	"github.com/omidMorovati/expenseTracker/internal/service"
 	"log/slog"
@@ -23,26 +24,44 @@ func main() {
 	cfg, err := config.Load()
 	if err != nil {
 		logger.Error("failed to load config", "error", err)
+		os.Exit(1)
 	}
 
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode)
-
 	pool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
-		logger.Error("failed to connect to db", "error", err)
+		logger.Error("failed to connect to database", "error", err)
+		os.Exit(1)
 	}
 	defer pool.Close()
 
-	repo := repository.NewExpenseRepo(pool)
-	svc := service.NewExpenseService(repo)
-	h := handler.NewExpenseHandler(svc, logger)
+	// Repositories
+	userRepo := repository.NewUserRepo(pool)
+	expenseRepo := repository.NewExpenseRepo(pool)
 
+	// Services
+	authService := service.NewAuthService(userRepo, cfg.JWTSecret, cfg.JWTExpiration)
+	expenseService := service.NewExpenseService(expenseRepo)
+
+	// Handlers
+	authHandler := handler.NewAuthHandler(authService, logger)
+	expenseHandler := handler.NewExpenseHandler(expenseService, logger)
+
+	// Router & Middleware
 	r := chi.NewRouter()
 	r.Use(slogMiddleware(logger))
-	r.Post("/expenses", h.Create)
-	r.Get("/dashboard", h.Dashboard)
-	// Add report endpoints...
+
+	// Public routes
+	r.Post("/auth/register", authHandler.Register)
+	r.Post("/auth/login", authHandler.Login)
+
+	// Protected routes
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.JWTAuth([]byte(cfg.JWTSecret)))
+		r.Post("/expenses", expenseHandler.Create)
+		r.Get("/dashboard", expenseHandler.Dashboard)
+	})
 
 	srv := &http.Server{Addr: cfg.Port, Handler: r}
 	go func() {

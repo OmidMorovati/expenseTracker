@@ -4,18 +4,19 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/joho/godotenv"
 	"log"
+	"time"
 )
 
 type Config struct {
-	Port          string `env:"PORT" envDefault:":8080"`
-	DBHost        string `env:"DB_HOST" envDefault:"localhost"`
-	DBPort        string `env:"DB_PORT" envDefault:"5432"`
-	DBUser        string `env:"DB_USER" envDefault:"postgres"`
-	DBPassword    string `env:"DB_PASSWORD" envDefault:"postgres"`
-	DBName        string `env:"DB_NAME" envDefault:"expenses"`
-	DBSSLMode     string `env:"DB_SSLMODE" envDefault:"disable"`
-	JWTSecret     string `env:"JWT_SECRET" envDefault:"super-secret-key-change-in-prod"`
-	JWTExpiration string `env:"JWT_EXPIRATION" envDefault:"24h"`
+	Port          string        `env:"PORT" envDefault:":8080"`
+	DBHost        string        `env:"DB_HOST" envDefault:"localhost"`
+	DBPort        string        `env:"DB_PORT" envDefault:"5432"`
+	DBUser        string        `env:"DB_USER" envDefault:"postgres"`
+	DBPassword    string        `env:"DB_PASSWORD" envDefault:"postgres"`
+	DBName        string        `env:"DB_NAME" envDefault:"expenses"`
+	DBSSLMode     string        `env:"DB_SSLMODE" envDefault:"disable"`
+	JWTSecret     string        `env:"JWT_SECRET" envDefault:"super-secret-key-change-in-prod"`
+	JWTExpiration time.Duration `env:"JWT_EXPIRATION" envDefault:"24h"`
 }
 
 func Load() (*Config, error) {
