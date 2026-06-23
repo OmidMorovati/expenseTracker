@@ -32,10 +32,19 @@
             <div class="card"><h3>Today's Total</h3><p id="today-total">$0.00</p></div>
             <div class="card"><h3>This Month</h3><p id="month-total">$0.00</p></div>
         </div>
+        <!-- FILTER BUTTONS -->
+        <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+            <button hx-get="/expenses/recent?limit=5" hx-target="#recent-list" hx-swap="innerHTML" class="btn-secondary">Last 5</button>
+            <button hx-get="/expenses/recent?limit=10" hx-target="#recent-list" hx-swap="innerHTML" class="btn-secondary">Last 10</button>
+            <button hx-get="/expenses/recent?limit=50" hx-target="#recent-list" hx-swap="innerHTML" class="btn-secondary">Show 50</button>
+        </div>
         <h2>Recent Expenses</h2>
         <table>
             <thead><tr><th>Date</th><th>Title</th><th>Category</th><th>Amount</th></tr></thead>
-            <tbody id="recent-list" hx-get="/api/expenses/recent" hx-trigger="load" hx-swap="innerHTML">
+            <tbody id="recent-list"
+                   hx-get="/expenses/recent?limit=10"
+                   hx-trigger="load"
+                   hx-swap="innerHTML">
             <tr><td colspan="4">Loading...</td></tr>
             </tbody>
         </table>

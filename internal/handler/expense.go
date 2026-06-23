@@ -100,3 +100,28 @@ func (h *ExpenseHandler) respond(w http.ResponseWriter, status int, msg string) 
 		return
 	}
 }
+
+func (h *ExpenseHandler) Recent(w http.ResponseWriter, r *http.Request) {
+	// Default limit, allow override via query param
+	limit := 10
+	if l := r.URL.Query().Get("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 100 {
+			limit = parsed
+		}
+	}
+
+	h.logger.Info(r.URL.Query().Encode())
+	expenses, err := h.svc.ListRecent(r.Context(), limit)
+	if err != nil {
+		h.logger.Error("list recent expenses", "error", err)
+		// For HTMX: return empty rows with error message
+		fmt.Fprint(w, `<tr><td colspan="4" class="error">Failed to load expenses</td></tr>`)
+		return
+	}
+
+	// Render ONLY the table rows partial
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := h.templates.ExecuteTemplate(w, "expenses_table_rows", expenses); err != nil {
+		h.logger.Error("render template", "error", err)
+	}
+}

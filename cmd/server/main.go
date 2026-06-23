@@ -74,7 +74,7 @@ func main() {
 
 		// API routes (protected)
 		r.Post("/expenses", expenseHandler.Create)
-		//r.Get("/api/expenses/recent", expenseHandler.Recent) // You'll implement this later
+		r.Get("/expenses/recent", expenseHandler.Recent) // You'll implement this later
 	})
 
 	srv := &http.Server{Addr: cfg.Port, Handler: r}
