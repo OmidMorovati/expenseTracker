@@ -1,0 +1,14 @@
+{{define "expenses_table_rows"}}
+{{if .}}
+{{range .}}
+<tr>
+    <td>{{.Date.Format "Jan 2, 2006"}}</td>
+    <td>{{.Title}}</td>
+    <td><span class="badge">{{.Category}}</span></td>
+    <td class="text-right">${{printf "%.2f" .Amount}}</td>
+</tr>
+{{end}}
+{{else}}
+<tr><td colspan="4" class="text-center" style="color:#64748b">No expenses yet. Start tracking! 🎯</td></tr>
+{{end}}
+{{end}}

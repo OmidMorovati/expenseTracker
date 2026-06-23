@@ -3,17 +3,20 @@ package handler
 import (
 	"encoding/json"
 	"github.com/omidMorovati/expenseTracker/internal/service"
+	"html/template"
 	"log/slog"
 	"net/http"
+	"time"
 )
 
 type AuthHandler struct {
-	svc    *service.AuthService
-	logger *slog.Logger
+	svc       *service.AuthService
+	logger    *slog.Logger
+	templates *template.Template
 }
 
-func NewAuthHandler(svc *service.AuthService, logger *slog.Logger) *AuthHandler {
-	return &AuthHandler{svc: svc, logger: logger}
+func NewAuthHandler(svc *service.AuthService, logger *slog.Logger, templates *template.Template) *AuthHandler {
+	return &AuthHandler{svc: svc, logger: logger, templates: templates}
 }
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +55,22 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set secure cookie for page navigation
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    token,
+		Path:     "/",
+		MaxAge:   int(24 * time.Hour.Seconds()),
+		HttpOnly: true,  // Prevent XSS theft
+		Secure:   false, // Set to true in production with HTTPS
+		SameSite: http.SameSiteLaxMode,
+	})
+
 	writeJSON(w, http.StatusOK, map[string]string{"token": token})
+}
+
+func (h *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
+	h.templates.ExecuteTemplate(w, "login", nil)
 }
 
 // writeJSON is a small helper to keep handlers DRY and consistent

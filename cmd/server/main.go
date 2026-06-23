@@ -11,6 +11,7 @@ import (
 	"github.com/omidMorovati/expenseTracker/internal/middleware"
 	"github.com/omidMorovati/expenseTracker/internal/repository"
 	"github.com/omidMorovati/expenseTracker/internal/service"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
@@ -45,22 +46,35 @@ func main() {
 	expenseService := service.NewExpenseService(expenseRepo)
 
 	// Handlers
-	authHandler := handler.NewAuthHandler(authService, logger)
-	expenseHandler := handler.NewExpenseHandler(expenseService, logger)
+	templates := template.Must(template.ParseGlob("web/templates/*.html"))
+	authHandler := handler.NewAuthHandler(authService, logger, templates)
+	expenseHandler := handler.NewExpenseHandler(expenseService, logger, templates)
 
 	// Router & Middleware
 	r := chi.NewRouter()
 	r.Use(slogMiddleware(logger))
 
+	// Static files
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+
 	// Public routes
+	r.Get("/login", authHandler.LoginPage)
 	r.Post("/auth/register", authHandler.Register)
 	r.Post("/auth/login", authHandler.Login)
 
-	// Protected routes
+	// Auth routes
+	r.Post("/auth/register", authHandler.Register)
+	r.Post("/auth/login", authHandler.Login)
+
+	// Web pages
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.JWTAuth([]byte(cfg.JWTSecret)))
+		r.Get("/dashboard", expenseHandler.DashboardPage)
+		r.Get("/expenses/new", expenseHandler.CreatePage)
+
+		// API routes (protected)
 		r.Post("/expenses", expenseHandler.Create)
-		r.Get("/dashboard", expenseHandler.Dashboard)
+		r.Get("/expenses/recent", expenseHandler.Recent) // You'll implement this later
 	})
 
 	srv := &http.Server{Addr: cfg.Port, Handler: r}
