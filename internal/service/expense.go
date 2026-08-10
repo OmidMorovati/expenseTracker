@@ -23,6 +23,11 @@ func (s *ExpenseService) Create(ctx context.Context, e *domain.Expense) error {
 		return err
 	}
 	e.ID = uuid.New().String()
+	userID, ok := ctx.Value(domain.UserIDKey).(string)
+	if !ok {
+		return fmt.Errorf("unauthorized: missing user ID in context")
+	}
+	e.UserID = userID
 	return s.repo.Create(ctx, e)
 }
 
