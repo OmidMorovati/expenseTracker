@@ -32,6 +32,16 @@
             <div class="card"><h3>Today's Total</h3><p id="today-total">$0.00</p></div>
             <div class="card"><h3>This Month</h3><p id="month-total">$0.00</p></div>
         </div>
+        <!-- 👇 Filter Tabs -->
+        <div style="display:flex; gap:0.5rem; margin: 1.5rem 0;">
+            <button hx-get="/api/expenses/stats?period=today" hx-target="#stats-container" hx-swap="innerHTML" class="btn-secondary">Today</button>
+            <button hx-get="/api/expenses/stats?period=week" hx-target="#stats-container" hx-swap="innerHTML" class="btn-secondary">This Week</button>
+            <button hx-get="/api/expenses/stats?period=month" hx-target="#stats-container" hx-swap="innerHTML" class="btn-secondary">This Month</button>
+        </div>
+        <!-- 👇 This is the target container that HTMX will update -->
+        <div id="stats-container" class="stats" hx-get="/api/expenses/stats?period=today" hx-trigger="load" hx-swap="innerHTML">
+            <div class="card"><h3>Loading...</h3></div>
+        </div>
         <!-- FILTER BUTTONS -->
         <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
             <button hx-get="/expenses/recent?limit=5" hx-target="#recent-list" hx-swap="innerHTML" class="btn-secondary">Last 5</button>
