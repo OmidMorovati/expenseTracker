@@ -1,0 +1,8 @@
+{{define "stats_cards"}}
+<div class="card" style="border-left: 4px solid #2563eb;">
+    <h3 style="text-transform: capitalize; color: #64748b; font-size: 0.9rem;">{{.Period}} Total</h3>
+    <p style="font-size: 1.75rem; font-weight: bold; color: #1e293b; margin-top: 0.25rem;">
+        ${{printf "%.2f" .Total}}
+    </p>
+</div>
+{{end}}

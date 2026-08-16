@@ -42,3 +42,34 @@ func (s *ExpenseService) ListRecent(ctx context.Context, limit int) ([]domain.Ex
 	}
 	return s.repo.ListRecent(ctx, userID, limit)
 }
+func (s *ExpenseService) GetTotalForPeriod(ctx context.Context, period string) (float64, error) {
+	userID, ok := ctx.Value(domain.UserIDKey).(string)
+	if !ok {
+		return 0, fmt.Errorf("missing user ID in context")
+	}
+
+	now := time.Now()
+	var start, end time.Time
+
+	// Calculate start and end boundaries based on the period
+	switch period {
+	case "today":
+		start = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		end = start.AddDate(0, 0, 1) // Tomorrow at 00:00
+	case "week":
+		// Calculate start of the week (Monday)
+		offset := int(now.Weekday())
+		if offset == 0 {
+			offset = 7
+		} // Go's Sunday is 0, we want Monday to be 0
+		start = time.Date(now.Year(), now.Month(), now.Day()-offset+1, 0, 0, 0, 0, now.Location())
+		end = start.AddDate(0, 0, 7) // Next Monday at 00:00
+	case "month":
+		start = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+		end = start.AddDate(0, 1, 0) // 1st of next month at 00:00
+	default:
+		return 0, fmt.Errorf("invalid period: %s", period)
+	}
+
+	return s.repo.GetTotalByDateRange(ctx, userID, start, end)
+}

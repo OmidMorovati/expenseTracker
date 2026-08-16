@@ -125,3 +125,32 @@ func (h *ExpenseHandler) Recent(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("render template", "error", err)
 	}
 }
+
+func (h *ExpenseHandler) GetStats(w http.ResponseWriter, r *http.Request) {
+	period := r.URL.Query().Get("period")
+	if period == "" {
+		period = "today" // Default fallback
+	}
+
+	total, err := h.svc.GetTotalForPeriod(r.Context(), period)
+	if err != nil {
+		h.logger.Error("get stats failed", "error", err)
+		http.Error(w, "failed to load stats", http.StatusInternalServerError)
+		return
+	}
+
+	// Pass data to the template
+	data := struct {
+		Total  float64
+		Period string
+	}{
+		Total:  total,
+		Period: period,
+	}
+
+	// Render ONLY the stats fragment
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := h.templates.ExecuteTemplate(w, "stats_cards", data); err != nil {
+		h.logger.Error("render stats template", "error", err)
+	}
+}

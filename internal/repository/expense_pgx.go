@@ -81,3 +81,18 @@ func (r *ExpenseRepo) ListRecent(ctx context.Context, userID string, limit int) 
 	}
 	return expenses, rows.Err()
 }
+
+func (r *ExpenseRepo) GetTotalByDateRange(ctx context.Context, userID string, start, end time.Time) (float64, error) {
+	var total float64
+	// COALESCE ensures we return 0 instead of NULL if no expenses exist
+	err := r.pool.QueryRow(ctx,
+		`SELECT COALESCE(SUM(amount), 0) FROM expenses 
+         WHERE user_id = $1 AND date >= $2 AND date < $3`,
+		userID, start, end,
+	).Scan(&total)
+
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}
