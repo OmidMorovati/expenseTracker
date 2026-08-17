@@ -154,3 +154,18 @@ func (h *ExpenseHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("render stats template", "error", err)
 	}
 }
+
+func (h *ExpenseHandler) UpdatePage(w http.ResponseWriter, r *http.Request) {
+	ID := r.PathValue("id")
+	expense, err := h.svc.GetExpense(r.Context(), ID)
+	if err != nil {
+		h.logger.Error("get expense failed", "error", err)
+		http.Error(w, "failed to load expense data", http.StatusInternalServerError)
+		return
+	}
+
+	err = h.templates.ExecuteTemplate(w, "update", expense)
+	if err != nil {
+		return
+	}
+}

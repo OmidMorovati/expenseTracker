@@ -71,11 +71,13 @@ func main() {
 		r.Use(middleware.JWTAuth([]byte(cfg.JWTSecret)))
 		r.Get("/dashboard", expenseHandler.DashboardPage)
 		r.Get("/expenses/new", expenseHandler.CreatePage)
+		r.Get("/expenses/{id}", expenseHandler.UpdatePage)
 
 		// API routes (protected)
 		r.Post("/expenses", expenseHandler.Create)
 		r.Get("/expenses/recent", expenseHandler.Recent)
 		r.Get("/api/expenses/stats", expenseHandler.GetStats)
+
 	})
 
 	srv := &http.Server{Addr: cfg.Port, Handler: r}

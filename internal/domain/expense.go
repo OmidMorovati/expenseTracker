@@ -22,6 +22,7 @@ type ExpenseRepository interface {
 	DailyTotals(ctx context.Context, date time.Time) (float64, error)
 	MonthlyTotals(ctx context.Context, year, month int) ([]MonthTotal, error)
 	GetTotalByDateRange(ctx context.Context, userID string, start, end time.Time) (float64, error)
+	GetExpense(ctx context.Context, userID string, expenseID string) (Expense, error)
 }
 
 type MonthTotal struct {

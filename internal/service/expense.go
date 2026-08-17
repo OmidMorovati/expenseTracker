@@ -73,3 +73,11 @@ func (s *ExpenseService) GetTotalForPeriod(ctx context.Context, period string) (
 
 	return s.repo.GetTotalByDateRange(ctx, userID, start, end)
 }
+
+func (s *ExpenseService) GetExpense(ctx context.Context, expenseId string) (domain.Expense, error) {
+	userID, ok := ctx.Value(domain.UserIDKey).(string)
+	if !ok {
+		return domain.Expense{}, fmt.Errorf("missing user ID in context")
+	}
+	return s.repo.GetExpense(ctx, userID, expenseId)
+}

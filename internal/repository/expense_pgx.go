@@ -96,3 +96,26 @@ func (r *ExpenseRepo) GetTotalByDateRange(ctx context.Context, userID string, st
 	}
 	return total, nil
 }
+
+func (r *ExpenseRepo) GetExpense(ctx context.Context, userID string, expenseID string) (domain.Expense, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT id, user_id, title, amount, category, date, created_at 
+         FROM expenses 
+         WHERE user_id = $1
+         WHERE id = $2
+         LIMIT 1`,
+		userID, expenseID,
+	)
+	if err != nil {
+		return domain.Expense{}, err
+	}
+	defer rows.Close()
+
+	var expense domain.Expense
+	var e domain.Expense
+	if err := rows.Scan(&e.ID, &e.UserID, &e.Title, &e.Amount, &e.Category, &e.Date, &e.CreatedAt); err != nil {
+		return domain.Expense{}, err
+	}
+	expense = e
+	return expense, rows.Err()
+}
